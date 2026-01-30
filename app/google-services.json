@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "180002986337",
+    "project_id": "mumpsb-8f445",
+    "storage_bucket": "mumpsb-8f445.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:180002986337:android:e8f2a7f344946602eecd20",
+        "android_client_info": {
+          "package_name": "com.example.mumps"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyC9PgiYnmzrSpXRiyRUwraUGCGwD0PDFeY"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

@@ -34,22 +34,36 @@ import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 
-data class CheckIn(
-    val mood: Int,
-    val note: String,
-    val createdAt: Long = System.currentTimeMillis()
-)
+import androidx.compose.runtime.LaunchedEffect
+import kotlinx.coroutines.launch
+import androidx.compose.runtime.rememberCoroutineScope
+
+
+//data class CheckIn(
+//    val mood: Int,
+//    val note: String,
+//    val createdAt: Long = System.currentTimeMillis()
+//)
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
         setContent {
+            val repo = remember { FirestoreRepo() }
+            val scope = rememberCoroutineScope()
+
             val context = LocalContext.current
 
             var selectedMood by remember { mutableIntStateOf(3) } // default
             var note by remember { mutableStateOf("") }
+//            val recent = remember { mutableStateListOf<CheckIn>() }
             val recent = remember { mutableStateListOf<CheckIn>() }
+            LaunchedEffect(Unit) {
+                val items = repo.fetchRecent(5)
+                recent.clear()
+                recent.addAll(items)
+            }
 
             Column(
                 modifier = Modifier
@@ -99,22 +113,45 @@ class MainActivity : ComponentActivity() {
 
                 Spacer(modifier = Modifier.height(12.dp))
 
+//                Button(
+//                    onClick = {
+//                        val trimmed = note.trim()
+//                        val checkIn = CheckIn(mood = selectedMood, note = trimmed)
+//                        recent.add(0, checkIn) // newest first
+//
+//                        // keep only last 5 for now
+//                        while (recent.size > 5) recent.removeAt(recent.size - 1)
+//
+//                        note = ""
+//                        Toast.makeText(context, "Saved locally ✅", Toast.LENGTH_SHORT).show()
+//                    },
+//                    modifier = Modifier.align(Alignment.End)
+//                ) {
+//                    Text("Save")
+//                }
                 Button(
                     onClick = {
                         val trimmed = note.trim()
-                        val checkIn = CheckIn(mood = selectedMood, note = trimmed)
-                        recent.add(0, checkIn) // newest first
 
-                        // keep only last 5 for now
-                        while (recent.size > 5) recent.removeAt(recent.size - 1)
+                        scope.launch {
+                            // 1) write to Firestore
+                            repo.addCheckIn(mood = selectedMood, note = trimmed)
 
-                        note = ""
-                        Toast.makeText(context, "Saved locally ✅", Toast.LENGTH_SHORT).show()
+                            // 2) re-fetch latest 5 so UI matches server
+                            val items: Collection<CheckIn> = repo.fetchRecent(5)
+                            recent.clear()
+                            recent.addAll(items)
+
+                            // 3) reset UI
+                            note = ""
+                            Toast.makeText(context, "Saved to Firestore ✅", Toast.LENGTH_SHORT).show()
+                        }
                     },
                     modifier = Modifier.align(Alignment.End)
                 ) {
                     Text("Save")
                 }
+
 
                 Spacer(modifier = Modifier.height(20.dp))
                 HorizontalDivider()
@@ -133,7 +170,8 @@ class MainActivity : ComponentActivity() {
                 } else {
                     recent.forEach { item ->
                         val time = SimpleDateFormat("MMM d, h:mm a", Locale.US)
-                            .format(Date(item.createdAt))
+                            .format(Date(item.createdAtMillis))
+
 
                         Text("• Mood ${item.mood}/5 — ${item.note.ifBlank { "(no note)" }} — $time")
                         Spacer(modifier = Modifier.height(6.dp))
