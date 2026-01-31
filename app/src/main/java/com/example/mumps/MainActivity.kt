@@ -37,6 +37,8 @@ import java.util.Locale
 import androidx.compose.runtime.LaunchedEffect
 import kotlinx.coroutines.launch
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.material3.ButtonDefaults
+
 
 
 class MainActivity : ComponentActivity() {
@@ -87,7 +89,13 @@ class MainActivity : ComponentActivity() {
                     (1..5).forEach { mood ->
                         Button(
                             onClick = { selectedMood = mood },
-                            modifier = Modifier.weight(1f).padding(horizontal = 2.dp)
+                            modifier = Modifier.weight(1f).padding(horizontal = 2.dp),
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = if (selectedMood == mood)
+                                    MaterialTheme.colorScheme.primary
+                                else
+                                    MaterialTheme.colorScheme.secondaryContainer
+                            )
                         ) {
                             Text(text = mood.toString())
                         }
