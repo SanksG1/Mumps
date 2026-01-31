@@ -43,4 +43,16 @@ class FirestoreRepo(
             )
         }
     }
+    suspend fun fetchMoodCountsAllTime(): Map<Int, Int> {
+        val out = mutableMapOf<Int, Int>()
+        for (mood in 1..5) {
+            val snap = checkins
+                .whereEqualTo("mood", mood)
+                .get()
+                .await()
+            out[mood] = snap.size()
+        }
+        return out
+    }
+
 }
